@@ -170,6 +170,51 @@ footer {
     display: none !important;
 }
 
+
+.notification {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    z-index: 1000;
+
+    max-width: 360px;
+    width: calc(100% - 40px);
+
+    padding: 16px 20px;
+    border-radius: 10px;
+
+    font-size: 0.95rem;
+    font-weight: 500;
+
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    border: 1px solid transparent;
+}
+
+.notification.error {
+    background-color: #fef2f2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+
+.notification.success {
+    background-color: #f0fdf4;
+    color: #166534;
+    border-color: #bbf7d0;
+}
+
+.notification[hidden] {
+    display: none !important;
+}
+
+@media (max-width: 600px) {
+    .notification {
+        bottom: 15px;
+        right: 15px;
+        width: calc(100% - 30px);
+    }
+}
+
+
 /* Responsive layout */
 @media (max-width: 600px) {
     header {

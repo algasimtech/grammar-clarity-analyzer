@@ -14,6 +14,30 @@ const clarityImprovements = document.getElementById("clarityImprovements");
 const improvedText = document.getElementById("improvedText");
 const copyBtn = document.getElementById("copyBtn");
 
+const notification = document.getElementById("notification");
+
+let notificationTimer;
+
+function showNotification(message, type = "error") {
+    clearTimeout(notificationTimer);
+
+    notification.textContent = message;
+    notification.className = `notification ${type}`;
+    notification.hidden = false;
+
+    notificationTimer = setTimeout(() => {
+        hideNotification();
+    }, 5000);
+}
+
+function hideNotification() {
+    clearTimeout(notificationTimer);
+
+    notification.hidden = true;
+    notification.textContent = "";
+}
+
+
 // Display the analysis results
 function displayResults(data) {
   grammarScore.textContent = `${data.grammarScore}%`;
@@ -60,11 +84,12 @@ analyzeBtn.addEventListener("click", async () => {
 
   // Check whether the user entered text
   if (!text) {
-    alert("Please enter a sentence or paragraph.");
+    showNotification("Please enter a sentence or paragraph.");
     return;
   }
 
   // Show loading state
+  hideNotification();
   analyzeBtn.disabled = true;
   analyzeBtn.textContent = "Analyzing...";
   results.hidden = true;
@@ -93,9 +118,9 @@ analyzeBtn.addEventListener("click", async () => {
   
   }catch (error) {
     if (error.name === "TimeoutError" || error.name === "AbortError") {
-        alert("The analysis is taking too long. Please try again.");
+        showNotification("The analysis is taking too long. Please try again.");
     } else {
-        alert(error.message);
+        showNotification(error.message);
     }
 }finally {
     // Restore the button
@@ -108,12 +133,13 @@ analyzeBtn.addEventListener("click", async () => {
 copyBtn.addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(improvedText.textContent);
+    showNotification("Improved text copied successfully!", "success");
     copyBtn.textContent = "Copied!";
 
     setTimeout(() => {
       copyBtn.textContent = "Copy Improved Text";
     }, 2000);
   } catch (error) {
-    alert("Unable to copy text. Please copy it manually.");
+    showNotification("Unable to copy text. Please copy it manually.");
   }
 });
