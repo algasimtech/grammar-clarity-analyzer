@@ -15,20 +15,6 @@ const clarityImprovements = document.getElementById("clarityImprovements");
 const improvedText = document.getElementById("improvedText");
 const copyBtn = document.getElementById("copyBtn");
 
-// Sample JSON response for testing
-const sampleResponse = {
-    grammarScore: 45,
-    clarityScore: 82,
-    grammarErrors: [
-        "Use 'doesn't' instead of 'don't'.",
-        "Use 'explain' instead of 'explains'."
-    ],
-    clarityImprovements: [
-        "Improve the verb forms for better readability."
-    ],
-    improvedText: "He doesn't know how to explain the problem properly."
-};
-
 // Display the analysis results
 function displayResults(data) {
     grammarScore.textContent = `${data.grammarScore}%`;
@@ -69,16 +55,50 @@ function displayResults(data) {
 }
 
 // Handle analyze button click
-analyzeBtn.addEventListener("click", () => {
+
+analyzeBtn.addEventListener("click", async () => {
     const text = userText.value.trim();
 
+    // Check whether the user entered text
     if (!text) {
         alert("Please enter a sentence or paragraph.");
         return;
     }
 
-    displayResults(sampleResponse);
+    // Show loading state
+    analyzeBtn.disabled = true;
+    analyzeBtn.textContent = "Analyzing...";
+    results.hidden = true;
+
+    try {
+        // Send the text to our Express backend
+        const response = await fetch("/api/analyze", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ text })
+        });
+
+        // Convert the backend response to JSON
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Analysis failed.");
+        }
+
+        // Display the returned analysis
+        displayResults(data);
+
+    } catch (error) {
+        alert(error.message);
+    } finally {
+        // Restore the button
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = "Analyze Text";
+    }
 });
+
 
 // Copy the improved text
 copyBtn.addEventListener("click", async () => {
