@@ -143,3 +143,39 @@ copyBtn.addEventListener("click", async () => {
     showNotification("Unable to copy text. Please copy it manually.");
   }
 });
+
+// themes
+
+const themeSelect = document.getElementById("themeSelect");
+
+const validThemes = ["light", "dark", "sepia"];
+
+// Load saved theme or use light mode by default
+const savedTheme = localStorage.getItem("theme");
+
+const initialTheme = validThemes.includes(savedTheme)
+    ? savedTheme
+    : "light";
+
+document.documentElement.setAttribute(
+    "data-theme",
+    initialTheme
+);
+
+themeSelect.value = initialTheme;
+
+// Change theme when user selects an option
+themeSelect.addEventListener("change", () => {
+    const selectedTheme = themeSelect.value;
+
+    if (!validThemes.includes(selectedTheme)) {
+        return;
+    }
+
+    document.documentElement.setAttribute(
+        "data-theme",
+        selectedTheme
+    );
+
+    localStorage.setItem("theme", selectedTheme);
+});
