@@ -12,47 +12,21 @@
     <header>
       <div class="header-top">
         <div class="brand">
-          <img
-            src="/favicon.png"
-            alt="Grammar & Clarity Analyzer Logo"
-            class="brand-logo"
-          />
-
+          <img src="/favicon.png" alt="Grammar & Clarity Analyzer Logo" class="brand-logo" />
           <div class="brand-text">
             <h1>Grammar & Clarity Analyzer</h1>
             <p>Improve your writing with AI-powered feedback</p>
           </div>
         </div>
-
         <div class="theme-switcher" role="group" aria-label="Choose appearance">
-          <button
-            type="button"
-            class="theme-option"
-            data-theme-value="light"
-            aria-pressed="true"
-          >
-            <span aria-hidden="true">☀</span>
-            Light
+          <button type="button" class="theme-option" data-theme-value="light" aria-pressed="true">
+            <span aria-hidden="true">☀</span> Light
           </button>
-
-          <button
-            type="button"
-            class="theme-option"
-            data-theme-value="dark"
-            aria-pressed="false"
-          >
-            <span aria-hidden="true">☾</span>
-            Dark
+          <button type="button" class="theme-option" data-theme-value="dark" aria-pressed="false">
+            <span aria-hidden="true">☾</span> Dark
           </button>
-
-          <button
-            type="button"
-            class="theme-option"
-            data-theme-value="sepia"
-            aria-pressed="false"
-          >
-            <span aria-hidden="true">▤</span>
-            Sepia
+          <button type="button" class="theme-option" data-theme-value="sepia" aria-pressed="false">
+            <span aria-hidden="true">▤</span> Sepia
           </button>
         </div>
       </div>
@@ -61,67 +35,65 @@
     <main>
       <section class="input-section">
         <h2>Analyze Your Writing</h2>
-
         <label for="userText">Enter your text:</label>
-        <textarea
-          id="userText"
-          rows="8"
-          placeholder="Type or paste a sentence or paragraph here..."
-        ></textarea>
-
+        <textarea id="userText" rows="8" maxlength="5000"
+          placeholder="Type or paste a sentence or paragraph here..."></textarea>
         <div class="text-statistics">
           <span>Words: <strong id="wordCount">0</strong></span>
           <span>Characters: <strong id="characterCount">0</strong></span>
           <span>Sentences: <strong id="sentenceCount">0</strong></span>
           <span>Reading time: <strong id="readingTime">0 sec</strong></span>
         </div>
-
         <button id="analyzeBtn" type="button">Analyze Text</button>
-        <div
-          id="notification"
-          class="notification"
-          role="status"
-          aria-live="polite"
-          hidden
-        ></div>
+        <div id="notification" class="notification" role="status" aria-live="polite" hidden></div>
       </section>
 
       <section class="results-section" id="results" hidden>
         <h2>Analysis Results</h2>
 
+        <div id="inputWarning" class="input-warning" role="status" aria-live="polite" hidden>
+          <div class="input-warning-heading">
+            <span aria-hidden="true">⚠</span>
+            <strong id="inputWarningTitle">Input quality warning</strong>
+          </div>
+          <p id="inputWarningMessage"></p>
+        </div>
+
         <div class="scores">
           <div class="score-card">
             <h3>Grammar Score</h3>
             <p id="grammarScore">0%</p>
-            <progress id="grammarProgress" value="0" max="100"></progress>
+            <progress id="grammarProgress" value="0" max="100" aria-label="Grammar score"></progress>
           </div>
-
           <div class="score-card">
             <h3>Clarity Score</h3>
             <p id="clarityScore">0%</p>
-            <progress id="clarityProgress" value="0" max="100"></progress>
+            <progress id="clarityProgress" value="0" max="100" aria-label="Clarity score"></progress>
           </div>
         </div>
 
         <div class="feedback">
-          <h3>Grammar Errors</h3>
-          <ul id="grammarErrors"></ul>
+          <section id="inputIssuesSection" class="input-issues-section" hidden>
+            <h3>Input Issues</h3>
+            <ul id="inputIssues"></ul>
+          </section>
 
-          <h3>Clarity Improvements</h3>
-          <ul id="clarityImprovements"></ul>
+          <div id="writingFeedback">
+            <h3>Grammar Errors</h3>
+            <ul id="grammarErrors"></ul>
+            <h3>Clarity Improvements</h3>
+            <ul id="clarityImprovements"></ul>
+          </div>
         </div>
 
-        <div class="improved-text">
-          <h3>Improved Version</h3>
+        <div class="improved-text" id="improvedTextSection">
+          <h3 id="improvedTextHeading">Improved Version</h3>
           <p id="improvedText"></p>
-
           <button id="copyBtn" type="button">Copy Improved Text</button>
         </div>
       </section>
     </main>
 
-    <footer>
-      <p>Grammar & Clarity Analyzer</p>
-    </footer>
+    <footer><p>Grammar & Clarity Analyzer</p></footer>
   </body>
 </html>

@@ -4,83 +4,76 @@ const results = document.getElementById("results");
 
 const grammarScore = document.getElementById("grammarScore");
 const clarityScore = document.getElementById("clarityScore");
-
 const grammarProgress = document.getElementById("grammarProgress");
 const clarityProgress = document.getElementById("clarityProgress");
 
 const grammarErrors = document.getElementById("grammarErrors");
 const clarityImprovements = document.getElementById("clarityImprovements");
+const inputIssues = document.getElementById("inputIssues");
+const inputIssuesSection = document.getElementById("inputIssuesSection");
+const inputWarning = document.getElementById("inputWarning");
+const inputWarningTitle = document.getElementById("inputWarningTitle");
+const inputWarningMessage = document.getElementById("inputWarningMessage");
+const writingFeedback = document.getElementById("writingFeedback");
+const improvedTextSection = document.getElementById("improvedTextSection");
+const improvedTextHeading = document.getElementById("improvedTextHeading");
 
 const improvedText = document.getElementById("improvedText");
 const copyBtn = document.getElementById("copyBtn");
-
 const notification = document.getElementById("notification");
-
-let notificationTimer;
-
-function showNotification(message, type = "error") {
-  clearTimeout(notificationTimer);
-
-  notification.textContent = message;
-  notification.className = `notification ${type}`;
-  notification.hidden = false;
-
-  notificationTimer = setTimeout(() => {
-    hideNotification();
-  }, 5000);
-}
-
-function hideNotification() {
-  clearTimeout(notificationTimer);
-
-  if (notification.hidden) return;
-
-  notification.classList.add("exiting");
-
-  setTimeout(() => {
-    if (notification.classList.contains("exiting")) {
-      notification.hidden = true;
-      notification.textContent = "";
-      notification.classList.remove("exiting");
-    }
-  }, 250);
-}
 
 const wordCount = document.getElementById("wordCount");
 const characterCount = document.getElementById("characterCount");
 const sentenceCount = document.getElementById("sentenceCount");
 const readingTime = document.getElementById("readingTime");
 
+let notificationTimer;
+let notificationExitTimer;
+let copyTimer;
+
+function showNotification(message, type = "error") {
+  clearTimeout(notificationTimer);
+  clearTimeout(notificationExitTimer);
+  notification.textContent = message;
+  notification.className = `notification ${type}`;
+  notification.hidden = false;
+  notificationTimer = setTimeout(hideNotification, 5000);
+}
+
+function hideNotification() {
+  clearTimeout(notificationTimer);
+  clearTimeout(notificationExitTimer);
+  if (notification.hidden) return;
+  notification.classList.add("exiting");
+  notificationExitTimer = setTimeout(() => {
+    notification.hidden = true;
+    notification.textContent = "";
+    notification.classList.remove("exiting");
+  }, 250);
+}
+
 function updateTextStatistics() {
   const text = userText.value;
   const trimmedText = text.trim();
-
   const words = trimmedText ? trimmedText.split(/\s+/).length : 0;
-
-  const characters = text.length;
-
   const sentences = trimmedText
-    ? (trimmedText.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || []).filter((sentence) =>
-        sentence.trim(),
-      ).length
+    ? (trimmedText.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [])
+        .filter((sentence) => sentence.trim()).length
     : 0;
 
-  const seconds = Math.ceil((words / 200) * 60);
-
   wordCount.textContent = words;
-  characterCount.textContent = characters;
+  characterCount.textContent = text.length;
   sentenceCount.textContent = sentences;
-  readingTime.textContent = `${seconds} sec`;
+  readingTime.textContent = `${Math.ceil((words / 200) * 60)} sec`;
 }
 
 userText.addEventListener("input", updateTextStatistics);
 updateTextStatistics();
 
-// Display the analysis results
 function renderFeedback(container, items, emptyMessage) {
-  container.innerHTML = "";
+  container.replaceChildren();
 
-  if (items.length === 0) {
+  if (!items.length) {
     const li = document.createElement("li");
     li.className = "feedback-empty";
     li.textContent = emptyMessage;
@@ -108,85 +101,168 @@ function renderFeedback(container, items, emptyMessage) {
     suggestion.className = "feedback-suggestion";
     suggestion.textContent = item.suggestion;
 
-    comparison.appendChild(original);
-    comparison.appendChild(arrow);
-    comparison.appendChild(suggestion);
+    comparison.append(original, arrow, suggestion);
 
     const explanation = document.createElement("p");
     explanation.className = "feedback-explanation";
     explanation.textContent = item.explanation;
 
-    li.appendChild(comparison);
-    li.appendChild(explanation);
-
+    li.append(comparison, explanation);
     container.appendChild(li);
   });
 }
 
-function displayResults(data) {
-  grammarScore.textContent = `${data.grammarScore}%`;
-  clarityScore.textContent = `${data.clarityScore}%`;
+function renderInputIssues(items) {
+  inputIssues.replaceChildren();
+  inputIssuesSection.hidden = items.length === 0;
 
-  grammarProgress.value = data.grammarScore;
-  clarityProgress.value = data.clarityScore;
+  const labels = {
+    spelling: "Possible spelling issue",
+    unrecognizable_text: "Unrecognizable text",
+    language: "Language not supported",
+  };
 
-  renderFeedback(grammarErrors, data.grammarErrors, "No grammar errors found.");
+  items.forEach((item) => {
+    const li = document.createElement("li");
+    li.className = "feedback-card input-issue-card";
 
-  renderFeedback(
-    clarityImprovements,
-    data.clarityImprovements,
-    "Your writing is already clear.",
+    const heading = document.createElement("div");
+    heading.className = "input-issue-heading";
+
+    const type = document.createElement("span");
+    type.className = "input-issue-type";
+    type.textContent = labels[item.type] || "Input issue";
+
+    const original = document.createElement("span");
+    original.className = "feedback-original";
+    original.textContent = item.original;
+
+    heading.append(type, original);
+
+    const explanation = document.createElement("p");
+    explanation.className = "feedback-explanation";
+    explanation.textContent = item.explanation;
+
+    li.append(heading, explanation);
+    inputIssues.appendChild(li);
+  });
+}
+
+function setScore(element, progress, value) {
+  const available = Number.isInteger(value) && value >= 0 && value <= 100;
+  element.textContent = available ? `${value}%` : "N/A";
+  progress.hidden = !available;
+  progress.value = available ? value : 0;
+  progress.setAttribute(
+    "aria-label",
+    available ? `Score: ${value} out of 100` : "Score unavailable"
   );
+}
 
-  improvedText.textContent = data.improvedText;
+function displayResults(data) {
+  const status = data.inputStatus || "valid";
+  const issues = Array.isArray(data.inputIssues) ? data.inputIssues : [];
+  const unableToEvaluate =
+    status === "unrecognizable" ||
+    status === "unsupported_language" ||
+    (status === "partially_understandable" &&
+      (data.grammarScore == null || data.clarityScore == null));
+
+  setScore(grammarScore, grammarProgress, data.grammarScore);
+  setScore(clarityScore, clarityProgress, data.clarityScore);
+
+  const warnings = {
+    unrecognizable: {
+      title: "Unable to evaluate this text reliably",
+      message:
+        "The text does not contain enough recognizable English for a meaningful grammar and clarity analysis. Please review it and try again.",
+    },
+    unsupported_language: {
+      title: "English text required",
+      message:
+        "This analyzer currently supports English. Please enter English text to receive grammar and clarity feedback.",
+    },
+    partially_understandable: {
+      title: "Some text may be difficult to understand",
+      message:
+        "Parts of the input could not be interpreted confidently. Review the input issues below; scores may be unavailable or less reliable.",
+    },
+  };
+
+  const warning = warnings[status];
+  inputWarning.hidden = !warning;
+  if (warning) {
+    inputWarningTitle.textContent = warning.title;
+    inputWarningMessage.textContent = warning.message;
+  } else {
+    inputWarningTitle.textContent = "";
+    inputWarningMessage.textContent = "";
+  }
+
+  renderInputIssues(issues);
+
+  writingFeedback.hidden = unableToEvaluate;
+  if (!unableToEvaluate) {
+    renderFeedback(
+      grammarErrors,
+      Array.isArray(data.grammarErrors) ? data.grammarErrors : [],
+      "No grammar errors found."
+    );
+    renderFeedback(
+      clarityImprovements,
+      Array.isArray(data.clarityImprovements) ? data.clarityImprovements : [],
+      "Your writing is already clear."
+    );
+  } else {
+    grammarErrors.replaceChildren();
+    clarityImprovements.replaceChildren();
+  }
+
+  improvedTextSection.hidden = unableToEvaluate;
+  improvedTextHeading.textContent = "Improved Version";
+  improvedText.textContent = data.improvedText || "";
 
   results.hidden = false;
-
   requestAnimationFrame(() => {
     results.scrollIntoView({
-      behavior: "smooth",
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth",
       block: "start",
     });
   });
 }
 
-// Handle analyze button click
-
 analyzeBtn.addEventListener("click", async () => {
   const text = userText.value.trim();
-
-  // Check whether the user entered text
   if (!text) {
     showNotification("Please enter a sentence or paragraph.");
     return;
   }
 
-  // Show loading state
+  if (text.length > 5000) {
+    showNotification("Text must not exceed 5000 characters.");
+    return;
+  }
+
   hideNotification();
   analyzeBtn.disabled = true;
   analyzeBtn.textContent = "Analyzing...";
   results.hidden = true;
 
   try {
-    // Send the text to our Express backend
-
     const response = await fetch("/api/analyze", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text }),
       signal: AbortSignal.timeout(60000),
     });
 
-    // Convert the backend response to JSON
     const data = await response.json();
-
     if (!response.ok) {
       throw new Error(data.error || "Analysis failed.");
     }
 
-    // Display the returned analysis
     displayResults(data);
   } catch (error) {
     if (error.name === "TimeoutError" || error.name === "AbortError") {
@@ -195,43 +271,37 @@ analyzeBtn.addEventListener("click", async () => {
       showNotification(error.message);
     }
   } finally {
-    // Restore the button
     analyzeBtn.disabled = false;
     analyzeBtn.textContent = "Analyze Text";
   }
 });
 
-// Copy the improved text
 copyBtn.addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(improvedText.textContent);
     showNotification("Improved text copied successfully!", "success");
     copyBtn.textContent = "Copied!";
-
-    setTimeout(() => {
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(() => {
       copyBtn.textContent = "Copy Improved Text";
     }, 2000);
-  } catch (error) {
+  } catch {
     showNotification("Unable to copy text. Please copy it manually.");
   }
 });
-
-// themes
 
 const themeOptions = document.querySelectorAll(".theme-option");
 const validThemes = ["light", "dark", "sepia"];
 
 function applyTheme(theme) {
-  if (!validThemes.includes(theme)) {
-    return;
-  }
-
+  if (!validThemes.includes(theme)) return;
   document.documentElement.setAttribute("data-theme", theme);
   localStorage.setItem("theme", theme);
-
   themeOptions.forEach((button) => {
-    const isSelected = button.dataset.themeValue === theme;
-    button.setAttribute("aria-pressed", String(isSelected));
+    button.setAttribute(
+      "aria-pressed",
+      String(button.dataset.themeValue === theme)
+    );
   });
 }
 
