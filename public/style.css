@@ -109,40 +109,69 @@ header p {
 
 /* Theme Selector */
 
+
 .theme-switcher {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 4px;
+    padding: 5px;
+    border-radius: 12px;
+    background-color: var(--soft-bg);
+    border: 1px solid var(--border-color);
     flex-shrink: 0;
 }
 
-.theme-switcher label {
+.theme-option {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
     margin: 0;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--secondary-text);
-}
-
-.theme-switcher select {
-    background-color: var(--card-bg);
-    color: var(--text-color);
-
-    border: 1px solid var(--border-color);
+    padding: 9px 12px;
     border-radius: 8px;
 
-    padding: 10px 12px;
-    font-family: inherit;
-    font-size: 0.9rem;
+    background-color: transparent;
+    color: var(--secondary-text);
 
-    cursor: pointer;
-    outline: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
-.theme-switcher select:focus {
-    border-color: var(--accent-color);
-    box-shadow: 0 0 0 3px
-        color-mix(in srgb, var(--accent-color) 15%, transparent);
+.theme-option:hover:not(:disabled) {
+    background-color: var(--card-bg);
+    color: var(--text-color);
 }
+
+.theme-option[aria-pressed="true"] {
+    background-color: var(--card-bg);
+    color: var(--accent-color);
+    box-shadow: 0 1px 5px var(--shadow-color);
+    font-weight: 700;
+}
+
+.theme-option:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+.theme-option span {
+    font-size: 1rem;
+}
+
+@media (max-width: 600px) {
+    .theme-switcher {
+        width: 100%;
+        max-width: 360px;
+    }
+
+    .theme-option {
+        flex: 1;
+        padding: 10px 8px;
+    }
+}
+
 
 /* Main Layout */
 

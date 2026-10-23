@@ -15,13 +15,36 @@
           <p>Improve your writing with AI-powered feedback.</p>
         </div>
 
-        <div class="theme-switcher">
-          <label for="themeSelect">Theme</label>
-          <select id="themeSelect" aria-label="Select appearance">
-            <option value="light">☀️ Light</option>
-            <option value="dark">🌙 Dark</option>
-            <option value="sepia">📜 Sepia</option>
-          </select>
+        <div class="theme-switcher" role="group" aria-label="Choose appearance">
+          <button
+            type="button"
+            class="theme-option"
+            data-theme-value="light"
+            aria-pressed="true"
+          >
+            <span aria-hidden="true">☀</span>
+            Light
+          </button>
+
+          <button
+            type="button"
+            class="theme-option"
+            data-theme-value="dark"
+            aria-pressed="false"
+          >
+            <span aria-hidden="true">☾</span>
+            Dark
+          </button>
+
+          <button
+            type="button"
+            class="theme-option"
+            data-theme-value="sepia"
+            aria-pressed="false"
+          >
+            <span aria-hidden="true">▤</span>
+            Sepia
+          </button>
         </div>
       </div>
     </header>

@@ -19,24 +19,23 @@ const notification = document.getElementById("notification");
 let notificationTimer;
 
 function showNotification(message, type = "error") {
-    clearTimeout(notificationTimer);
+  clearTimeout(notificationTimer);
 
-    notification.textContent = message;
-    notification.className = `notification ${type}`;
-    notification.hidden = false;
+  notification.textContent = message;
+  notification.className = `notification ${type}`;
+  notification.hidden = false;
 
-    notificationTimer = setTimeout(() => {
-        hideNotification();
-    }, 5000);
+  notificationTimer = setTimeout(() => {
+    hideNotification();
+  }, 5000);
 }
 
 function hideNotification() {
-    clearTimeout(notificationTimer);
+  clearTimeout(notificationTimer);
 
-    notification.hidden = true;
-    notification.textContent = "";
+  notification.hidden = true;
+  notification.textContent = "";
 }
-
 
 // Display the analysis results
 function displayResults(data) {
@@ -115,14 +114,13 @@ analyzeBtn.addEventListener("click", async () => {
 
     // Display the returned analysis
     displayResults(data);
-  
-  }catch (error) {
+  } catch (error) {
     if (error.name === "TimeoutError" || error.name === "AbortError") {
-        showNotification("The analysis is taking too long. Please try again.");
+      showNotification("The analysis is taking too long. Please try again.");
     } else {
-        showNotification(error.message);
+      showNotification(error.message);
     }
-}finally {
+  } finally {
     // Restore the button
     analyzeBtn.disabled = false;
     analyzeBtn.textContent = "Analyze Text";
@@ -146,36 +144,28 @@ copyBtn.addEventListener("click", async () => {
 
 // themes
 
-const themeSelect = document.getElementById("themeSelect");
-
+const themeOptions = document.querySelectorAll(".theme-option");
 const validThemes = ["light", "dark", "sepia"];
 
-// Load saved theme or use light mode by default
+function applyTheme(theme) {
+  if (!validThemes.includes(theme)) {
+    return;
+  }
+
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem("theme", theme);
+
+  themeOptions.forEach((button) => {
+    const isSelected = button.dataset.themeValue === theme;
+    button.setAttribute("aria-pressed", String(isSelected));
+  });
+}
+
 const savedTheme = localStorage.getItem("theme");
+applyTheme(validThemes.includes(savedTheme) ? savedTheme : "light");
 
-const initialTheme = validThemes.includes(savedTheme)
-    ? savedTheme
-    : "light";
-
-document.documentElement.setAttribute(
-    "data-theme",
-    initialTheme
-);
-
-themeSelect.value = initialTheme;
-
-// Change theme when user selects an option
-themeSelect.addEventListener("change", () => {
-    const selectedTheme = themeSelect.value;
-
-    if (!validThemes.includes(selectedTheme)) {
-        return;
-    }
-
-    document.documentElement.setAttribute(
-        "data-theme",
-        selectedTheme
-    );
-
-    localStorage.setItem("theme", selectedTheme);
+themeOptions.forEach((button) => {
+  button.addEventListener("click", () => {
+    applyTheme(button.dataset.themeValue);
+  });
 });
