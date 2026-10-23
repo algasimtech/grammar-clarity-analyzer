@@ -1,0 +1,75 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grammar & Clarity Analyzer</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <h1>Grammar & Clarity Analyzer</h1>
+        <p>Improve your writing with AI-powered feedback.</p>
+    </header>
+
+    <main>
+        <section class="input-section">
+            <h2>Analyze Your Writing</h2>
+
+            <label for="userText">Enter your text:</label>
+            <textarea
+                id="userText"
+                rows="8"
+                placeholder="Type or paste a sentence or paragraph here..."
+            ></textarea>
+
+            <button id="analyzeBtn" type="button">
+                Analyze Text
+            </button>
+        </section>
+
+        <section class="results-section" id="results" hidden>
+            <h2>Analysis Results</h2>
+
+            <div class="scores">
+                <div class="score-card">
+                    <h3>Grammar Score</h3>
+                    <p id="grammarScore">0%</p>
+                    <progress id="grammarProgress" value="0" max="100"></progress>
+                </div>
+
+                <div class="score-card">
+                    <h3>Clarity Score</h3>
+                    <p id="clarityScore">0%</p>
+                    <progress id="clarityProgress" value="0" max="100"></progress>
+                </div>
+            </div>
+
+            <div class="feedback">
+                <h3>Grammar Errors</h3>
+                <ul id="grammarErrors"></ul>
+
+                <h3>Clarity Improvements</h3>
+                <ul id="clarityImprovements"></ul>
+            </div>
+
+            <div class="improved-text">
+                <h3>Improved Version</h3>
+                <p id="improvedText"></p>
+
+                <button id="copyBtn" type="button">
+                    Copy Improved Text
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Grammar & Clarity Analyzer</p>
+    </footer>
+
+</body>
+</html>
