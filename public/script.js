@@ -33,11 +33,96 @@ function showNotification(message, type = "error") {
 function hideNotification() {
   clearTimeout(notificationTimer);
 
-  notification.hidden = true;
-  notification.textContent = "";
+  if (notification.hidden) return;
+
+  notification.classList.add("exiting");
+
+  setTimeout(() => {
+    if (notification.classList.contains("exiting")) {
+      notification.hidden = true;
+      notification.textContent = "";
+      notification.classList.remove("exiting");
+    }
+  }, 250);
 }
 
+const wordCount = document.getElementById("wordCount");
+const characterCount = document.getElementById("characterCount");
+const sentenceCount = document.getElementById("sentenceCount");
+const readingTime = document.getElementById("readingTime");
+
+function updateTextStatistics() {
+  const text = userText.value;
+  const trimmedText = text.trim();
+
+  const words = trimmedText ? trimmedText.split(/\s+/).length : 0;
+
+  const characters = text.length;
+
+  const sentences = trimmedText
+    ? (trimmedText.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || []).filter((sentence) =>
+        sentence.trim(),
+      ).length
+    : 0;
+
+  const seconds = Math.ceil((words / 200) * 60);
+
+  wordCount.textContent = words;
+  characterCount.textContent = characters;
+  sentenceCount.textContent = sentences;
+  readingTime.textContent = `${seconds} sec`;
+}
+
+userText.addEventListener("input", updateTextStatistics);
+updateTextStatistics();
+
 // Display the analysis results
+function renderFeedback(container, items, emptyMessage) {
+  container.innerHTML = "";
+
+  if (items.length === 0) {
+    const li = document.createElement("li");
+    li.className = "feedback-empty";
+    li.textContent = emptyMessage;
+    container.appendChild(li);
+    return;
+  }
+
+  items.forEach((item) => {
+    const li = document.createElement("li");
+    li.className = "feedback-card";
+
+    const comparison = document.createElement("div");
+    comparison.className = "feedback-comparison";
+
+    const original = document.createElement("span");
+    original.className = "feedback-original";
+    original.textContent = item.original;
+
+    const arrow = document.createElement("span");
+    arrow.className = "feedback-arrow";
+    arrow.textContent = "→";
+    arrow.setAttribute("aria-hidden", "true");
+
+    const suggestion = document.createElement("span");
+    suggestion.className = "feedback-suggestion";
+    suggestion.textContent = item.suggestion;
+
+    comparison.appendChild(original);
+    comparison.appendChild(arrow);
+    comparison.appendChild(suggestion);
+
+    const explanation = document.createElement("p");
+    explanation.className = "feedback-explanation";
+    explanation.textContent = item.explanation;
+
+    li.appendChild(comparison);
+    li.appendChild(explanation);
+
+    container.appendChild(li);
+  });
+}
+
 function displayResults(data) {
   grammarScore.textContent = `${data.grammarScore}%`;
   clarityScore.textContent = `${data.clarityScore}%`;
@@ -45,35 +130,24 @@ function displayResults(data) {
   grammarProgress.value = data.grammarScore;
   clarityProgress.value = data.clarityScore;
 
-  grammarErrors.innerHTML = "";
-  clarityImprovements.innerHTML = "";
+  renderFeedback(grammarErrors, data.grammarErrors, "No grammar errors found.");
 
-  if (data.grammarErrors.length === 0) {
-    const li = document.createElement("li");
-    li.textContent = "No grammar errors found.";
-    grammarErrors.appendChild(li);
-  } else {
-    data.grammarErrors.forEach((error) => {
-      const li = document.createElement("li");
-      li.textContent = error;
-      grammarErrors.appendChild(li);
-    });
-  }
-
-  if (data.clarityImprovements.length === 0) {
-    const li = document.createElement("li");
-    li.textContent = "Your writing is clear.";
-    clarityImprovements.appendChild(li);
-  } else {
-    data.clarityImprovements.forEach((improvement) => {
-      const li = document.createElement("li");
-      li.textContent = improvement;
-      clarityImprovements.appendChild(li);
-    });
-  }
+  renderFeedback(
+    clarityImprovements,
+    data.clarityImprovements,
+    "Your writing is already clear.",
+  );
 
   improvedText.textContent = data.improvedText;
+
   results.hidden = false;
+
+  requestAnimationFrame(() => {
+    results.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  });
 }
 
 // Handle analyze button click

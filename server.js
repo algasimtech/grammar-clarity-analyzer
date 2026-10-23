@@ -62,11 +62,33 @@ app.post("/api/analyze", async (req, res) => {
       grammarScore: 45,
       clarityScore: 82,
       grammarErrors: [
-        "Use 'doesn't' instead of 'don't'.",
-        "Use 'explain' instead of 'explains'.",
+        {
+          original: "I goes",
+          suggestion: "I went",
+          explanation:
+            "Use the past tense because the action happened yesterday.",
+        },
+        {
+          original: "My teacher give",
+          suggestion: "My teacher gave",
+          explanation: "The verb should be in the past tense.",
+        },
+        {
+          original: "I don't understand",
+          suggestion: "I didn't understand",
+          explanation:
+            "Maintain consistent past tense throughout the paragraph.",
+        },
       ],
-      clarityImprovements: ["Improve the verb forms for better readability."],
-      improvedText: "He doesn't know how to explain the problem properly.",
+      clarityImprovements: [
+        {
+          original: "very very difficult",
+          suggestion: "extremely difficult",
+          explanation: "Avoid unnecessary repetition for clearer writing.",
+        },
+      ],
+      improvedText:
+        "Yesterday I went to school. My teacher gave us an assignment. The assignment was extremely difficult, and I didn't understand it.",
     };
 
     return res.json(mockAnalysis);
@@ -107,8 +129,22 @@ SCORING:
 - 100 means no issues found in that category.
 - Keep scores consistent with the severity of the issues.
 - Evaluate paragraphs as a whole.
+
+
+FEEDBACK FORMAT:
+- Return grammarErrors and clarityImprovements as arrays of objects.
+- Each object must contain original, suggestion, and explanation.
+- The original field must quote an exact word or phrase from the user's input.
+- The suggestion field must contain the corrected or improved version.
+- The explanation field must explain why the change is needed.
+- Analyze every sentence in a paragraph.
+- Return a separate feedback object for each distinct issue.
+- Avoid reporting the same issue in both categories.
+- Do not invent errors or quote text that does not appear in the input.
+- Keep feedback in the same order as the issues appear in the text.
 `,
         responseMimeType: "application/json",
+
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -120,11 +156,39 @@ SCORING:
             },
             grammarErrors: {
               type: Type.ARRAY,
-              items: { type: Type.STRING },
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  original: {
+                    type: Type.STRING,
+                  },
+                  suggestion: {
+                    type: Type.STRING,
+                  },
+                  explanation: {
+                    type: Type.STRING,
+                  },
+                },
+                required: ["original", "suggestion", "explanation"],
+              },
             },
             clarityImprovements: {
               type: Type.ARRAY,
-              items: { type: Type.STRING },
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  original: {
+                    type: Type.STRING,
+                  },
+                  suggestion: {
+                    type: Type.STRING,
+                  },
+                  explanation: {
+                    type: Type.STRING,
+                  },
+                },
+                required: ["original", "suggestion", "explanation"],
+              },
             },
             improvedText: {
               type: Type.STRING,
@@ -147,13 +211,23 @@ SCORING:
     const validScore = (value) =>
       Number.isInteger(value) && value >= 0 && value <= 100;
 
+    const isValidFeedback = (item) =>
+      item !== null &&
+      typeof item === "object" &&
+      !Array.isArray(item) &&
+      typeof item.original === "string" &&
+      typeof item.suggestion === "string" &&
+      typeof item.explanation === "string" &&
+      item.original.trim().length > 0 &&
+      text.includes(item.original);
+
     if (
       !validScore(analysis.grammarScore) ||
       !validScore(analysis.clarityScore) ||
       !Array.isArray(analysis.grammarErrors) ||
-      !analysis.grammarErrors.every((item) => typeof item === "string") ||
+      !analysis.grammarErrors.every(isValidFeedback) ||
       !Array.isArray(analysis.clarityImprovements) ||
-      !analysis.clarityImprovements.every((item) => typeof item === "string") ||
+      !analysis.clarityImprovements.every(isValidFeedback) ||
       typeof analysis.improvedText !== "string"
     ) {
       throw new Error("Invalid Gemini response format");
